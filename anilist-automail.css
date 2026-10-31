@@ -1,0 +1,656 @@
+/* ==========================================================================
+   AniList Fullscreen Dark
+   Perfil oscuro, redondeado, a pantalla completa y responsive para AniList.
+
+   Se pega tal cual en el CSS personalizado de Automail. Para cambiar colores
+   o medidas, edita primero las variables de la sección 1: el resto las usa.
+
+   Índice (busca el número, por ejemplo "12."):
+     1.  Variables            8.  Títulos y paneles    15. Filtros
+     2.  Colores del tema     9.  Rejilla del resumen  16. Anime y Manga List
+     3.  Puntero              10. Bio                  17. Estadísticas
+     4.  Barra superior       11. Stats del resumen    18. Social
+     5.  Contenedores         12. Actividad            19. Barras laterales
+     6.  Banner               13. Historial y géneros  20. Responsive
+     7.  Pestañas             14. Favoritos
+
+   El orden importa: con la misma especificidad gana la regla posterior, y el
+   bloque Responsive debe seguir siendo el último.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Variables
+   -------------------------------------------------------------------------- */
+:root {
+  /* Paleta: canales RGB, sin rgb() */
+  --af-bg: 10, 15, 20;            /* Fondo de la página */
+  --af-card: 17, 22, 29;          /* Tarjetas y paneles */
+  --af-black: 5, 7, 10;           /* Notch y estadísticas */
+  --af-accent: 255, 65, 80;       /* Acento; el puntero lo repite como #ff4150 */
+  --af-text: 200, 208, 216;       /* Texto general */
+
+  /* Medidas: clamp(mínimo, fluido, máximo) */
+  --af-gutter: clamp(14px, 3.5vw, 96px);         /* Margen lateral */
+  --af-gap: clamp(14px, 1.8vw, 32px);            /* Separación entre bloques */
+  --af-radius: 16px;                             /* Redondeo general */
+  --af-banner-height: clamp(170px, 15vw, 320px); /* Alto del banner */
+  --af-sidebar: clamp(300px, 34%, 620px);        /* Columna izquierda del resumen */
+  --af-entry-min: max(460px, 45%);               /* Ancho mínimo de cada actividad */
+  --af-entry-height: clamp(70px, 4.6vw, 100px);  /* Alto de cada actividad */
+  --af-top: 92px;                                /* Espacio sobre el banner */
+  --af-fav-cols: 5;                              /* Favoritos por fila */
+}
+
+/* --------------------------------------------------------------------------
+   2. Colores del tema
+   Sustituye las variables de color de AniList. Sus valores son canales RGB
+   sueltos porque AniList los usa dentro de rgb() y rgba().
+   -------------------------------------------------------------------------- */
+body.site-theme-dark, body.site-theme-contrast, .user {
+  --color-background: var(--af-bg) !important;
+  --color-foreground: var(--af-card) !important;
+  --color-foreground-grey: var(--af-card) !important;
+  --color-foreground-blue: var(--af-card) !important;
+  --color-overlay: var(--af-black) !important;
+  --color-text: var(--af-text) !important;
+  --color-blue: var(--af-accent) !important;
+}
+body { background: rgb(var(--af-bg)) !important; overflow-x: clip; }
+* { scrollbar-color: rgb(var(--af-accent)) transparent; }
+
+/* --------------------------------------------------------------------------
+   3. Puntero
+   Dos SVG incrustados: flecha normal y mano para lo clicable. Los dos números
+   tras url() marcan el punto activo; dentro del SVG, # se escribe %23.
+   Lo clicable de AniList no hereda el puntero, por eso va la lista de abajo:
+   si un botón muestra la mano del sistema, añade aquí su clase.
+   -------------------------------------------------------------------------- */
+:root {
+  --af-cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M4 3v21l6-5.5 4 9 4-1.8-4-8.7h8z' fill='%2305070a' stroke='%23ff4150' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 4 3, auto;
+  --af-cursor-link: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M10 4a2 2 0 0 1 4 0v8a1.75 1.75 0 0 1 3.5 0v1a1.75 1.75 0 0 1 3.5 0v1a1.75 1.75 0 0 1 3.5 0v8c0 4-2.5 7-6.5 7h-2.5c-2.5 0-4-1-5.5-3L4.8 19c-1.2-1.7 1.2-3.6 2.8-2l2.400 2.500zM17.500 13v5M21 14v4' fill='%2305070a' stroke='%23ff4150' stroke-width='1.600' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 12 2, pointer;
+}
+html, body { cursor: var(--af-cursor); }
+a,
+button,
+summary,
+label,
+select,
+[role="button"],
+.link,
+.favourite,
+.entry-card,
+.follow-card,
+.load-more,
+.markdown-spoiler,
+.el-dropdown,
+.el-dropdown-menu,
+.el-dropdown-link,
+.el-dropdown-menu__item,
+.filter-group > *,
+.activity-history .history-day { cursor: var(--af-cursor-link) !important; }
+
+/* --------------------------------------------------------------------------
+   4. Barra superior
+   Notch del mismo ancho que el banner. #nav es flex: sin un width explícito,
+   .wrap se encoge a su contenido y deja de alinearse.
+   -------------------------------------------------------------------------- */
+#nav, #nav.transparent { background: none !important; box-shadow: none !important; }
+#nav > .wrap {
+  width: calc(100% - 2 * var(--af-gutter)) !important;
+  max-width: none !important;
+  margin-inline: var(--af-gutter) !important;
+  padding-inline: clamp(14px, 2vw, 32px) !important;
+  background: rgb(var(--af-black));
+  border-radius: 0 0 var(--af-radius) var(--af-radius);
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   5. Contenedores
+   Quita el ancho fijo de AniList para ocupar la pantalla, con margen lateral.
+   -------------------------------------------------------------------------- */
+.user .container {
+  width: 100% !important;
+  max-width: none !important;
+  margin-inline: 0 !important;
+  padding-inline: var(--af-gutter) !important;
+  box-sizing: border-box;
+}
+.user .content.container { margin-top: var(--af-gap); }
+
+/* --------------------------------------------------------------------------
+   6. Banner
+   El banner es estático y .banner-content se superpone con position: absolute,
+   tomando --af-top y --af-banner-height como referencia. Sus dos columnas
+   iguales dejan el hueco entre avatar y nombre en el centro exacto.
+   -------------------------------------------------------------------------- */
+.user .header-wrap {
+  position: relative;
+  margin: 0 var(--af-gutter);
+  padding-top: var(--af-top);
+  background: none !important;
+}
+.user .banner {
+  position: static;
+  height: var(--af-banner-height) !important;
+  min-height: 0 !important;
+  background-size: cover !important;
+  background-position: center !important;
+  border-radius: var(--af-radius) var(--af-radius) 0 0;
+  overflow: hidden;
+}
+.user .banner .shadow { display: none; }
+.user .banner .container { position: static; height: 0; padding: 0 !important; }
+.user .hohDownload {
+  top: calc(var(--af-top) + 10px) !important;
+  right: 12px !important;
+  z-index: 3;
+}
+.user .banner-content {
+  position: absolute;
+  top: var(--af-top);
+  left: 0;
+  right: 0;
+  height: var(--af-banner-height);
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  align-items: center !important;
+  gap: clamp(10px, 1.2vw, 22px);
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 2;
+}
+.user .banner-content .avatar {
+  display: block !important;
+  justify-self: end;
+  width: clamp(80px, 7vw, 140px) !important;
+  height: clamp(80px, 7vw, 140px) !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 14px;
+  box-shadow: none !important;
+  object-fit: cover;
+}
+.user .banner-content .name-wrapper {
+  display: block !important;
+  justify-self: start;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.user .banner-content .name {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  background: none !important;
+  color: #fff;
+  font-size: clamp(1.9rem, 1.2vw + 1.2rem, 3rem);
+  font-weight: 700;
+  text-shadow: 0 2px 6px #000, 0 0 2px #000;
+}
+.user .banner-content .actions {
+  position: absolute;
+  right: 16px;
+  bottom: -46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  z-index: 2;
+}
+
+/* --------------------------------------------------------------------------
+   7. Pestañas
+   La línea inferior es ::after y usa currentColor, así que toma el color de
+   cada pestaña. nth-child depende del orden de los enlaces de AniList.
+   transform-origin abajo evita que el scroll horizontal corte la línea.
+   -------------------------------------------------------------------------- */
+.user .nav-wrap {
+  background: rgb(var(--af-card)) !important;
+  border-radius: 0 0 var(--af-radius) var(--af-radius);
+}
+.user .nav-wrap .nav.container {
+  display: flex !important;
+  justify-content: safe center;
+  gap: clamp(0px, 1vw, 16px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.user .nav-wrap .link {
+  position: relative;
+  flex: none;
+  font-size: 1.5rem;
+  font-weight: 700;
+  transform-origin: center bottom;
+  transition: transform .2s, background .2s;
+}
+.user .nav-wrap .link[href$="/reviews"],
+.user .nav-wrap .link[href$="/submissions"] { display: none; }
+.user .nav-wrap .link:nth-child(1) { color: #ff5a4f; }
+.user .nav-wrap .link:nth-child(2) { color: #3db4f2; }
+.user .nav-wrap .link:nth-child(3) { color: #7bd555; }
+.user .nav-wrap .link:nth-child(4) { color: #f779a4; }
+.user .nav-wrap .link:nth-child(5) { color: #f79a63; }
+.user .nav-wrap .link:nth-child(6) { color: #e85d75; }
+.user .nav-wrap .link::after {
+  content: "";
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: currentColor;
+  transform: scaleX(0);
+  transition: transform .2s;
+}
+.user .nav-wrap .link:hover { background: rgba(255, 255, 255, .05); transform: scale(1.08); }
+.user .nav-wrap .link:hover::after,
+.user .nav-wrap .link.router-link-active::after { transform: scaleX(1); }
+
+/* --------------------------------------------------------------------------
+   8. Títulos y paneles
+   Tipografía de encabezados y fondo común de las tarjetas.
+   -------------------------------------------------------------------------- */
+.user .section-header,
+.user .section-name,
+.user .stats-wrap h3 {
+  color: #fff !important;
+  font-size: clamp(1.5rem, .8vw + 1.1rem, 1.9rem);
+  font-weight: 600;
+}
+.user .content-wrap,
+.user .favourites-wrap,
+.user .bar-chart-wrap,
+.user .pie-chart,
+.user .distribution,
+.user .activity-entry .wrap {
+  background: rgb(var(--af-card)) !important;
+  border-radius: var(--af-radius);
+}
+
+/* --------------------------------------------------------------------------
+   9. Rejilla del resumen
+   Dos columnas. El selector .content > .overview es a propósito: la página
+   Stats tiene otro .overview dentro y .user .overview también lo afectaría.
+   -------------------------------------------------------------------------- */
+.user .content > .overview {
+  display: grid !important;
+  grid-template-columns: var(--af-sidebar) minmax(0, 1fr) !important;
+  gap: var(--af-gap) !important;
+  margin-top: 0 !important;
+}
+.user .content > .overview > .section { min-width: 0; max-width: none !important; }
+.user .content > .overview .desktop { display: block !important; }
+.user .content > .overview .favourites:empty { display: none !important; }
+
+/* --------------------------------------------------------------------------
+   10. Bio
+   Centra la biografía y convierte los spoilers en un botón "click me".
+   -------------------------------------------------------------------------- */
+.user .about { margin-bottom: var(--af-gap); }
+.user .about .markdown { text-align: center; overflow-wrap: anywhere; }
+.user .about .markdown img { max-width: 100%; height: auto; }
+.user .about .markdown .markdown-spoiler { background: none !important; color: inherit; }
+.user .about .markdown .markdown-spoiler::before {
+  content: "click me" !important;
+  display: inline-block;
+  min-width: 100px;
+  padding: 3px 26px;
+  border-radius: 999px;
+  background: #fff !important;
+  color: #111 !important;
+  font-weight: 700;
+  cursor: var(--af-cursor-link);
+}
+.user .about .markdown .markdown-spoiler.spoiler-visible::before { display: none; }
+
+/* --------------------------------------------------------------------------
+   11. Stats del resumen
+   Total Anime, Days Watched, etc. Cada .stat define su color en --af-stat, y
+   la etiqueta, el número y la línea animada lo reutilizan.
+   -------------------------------------------------------------------------- */
+.user .section > .stats-wrap {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)) !important;
+  gap: var(--af-gap) !important;
+  margin-bottom: var(--af-gap);
+}
+.user .list-stats {
+  margin: 0 !important;
+  overflow: hidden;
+  background: rgb(var(--af-black)) !important;
+  border: 3px solid rgb(var(--af-card));
+  border-radius: 18px;
+}
+.user .list-stats .stats-wrap {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  background: none !important;
+}
+.user .list-stats .footer { display: none !important; }
+.user .list-stats .stat {
+  --af-stat: #8ba0b2;
+  position: relative;
+  padding: 14px 2px;
+  text-align: center;
+  transition: background .2s;
+}
+.user .list-stats .stat:nth-child(1) { --af-stat: rgb(var(--af-accent)); }
+.user .list-stats .stat:nth-child(2) { --af-stat: #ff8a3c; }
+.user .list-stats:nth-child(2) .stat:nth-child(1) { --af-stat: #ffc23c; }
+.user .list-stats:nth-child(2) .stat:nth-child(2) { --af-stat: #e4e65a; }
+.user .list-stats .value {
+  color: #fff !important;
+  font-size: clamp(1.8rem, 1vw + 1.2rem, 2.6rem);
+  font-weight: 700;
+  transition: transform .2s, color .2s;
+}
+.user .list-stats .label {
+  color: var(--af-stat) !important;
+  font-size: 1.1rem;
+  font-weight: 700;
+  transition: transform .2s;
+}
+.user .list-stats .stat::after {
+  content: "";
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--af-stat);
+  transform: scaleX(0);
+  transition: transform .2s;
+}
+.user .list-stats .stat:hover { background: rgba(255, 255, 255, .05); }
+.user .list-stats .stat:hover .value { color: var(--af-stat) !important; transform: translateY(-2px) scale(1.15); }
+.user .list-stats .stat:hover .label { transform: translateY(2px); }
+.user .list-stats .stat:hover::after { transform: scaleX(1); }
+
+/* --------------------------------------------------------------------------
+   12. Actividad
+   El desplegable de filtros se muestra como lista horizontal. La altura de las
+   entradas se controla con --af-entry-height y las columnas con --af-entry-min.
+   -------------------------------------------------------------------------- */
+.user .activity-feed-wrap .section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.user .activity-feed-wrap .el-dropdown-link { display: none; }
+.user .activity-feed-wrap .section-header .el-dropdown-menu {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 4px;
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+.user .activity-feed-wrap .section-header .el-dropdown-menu__item {
+  padding: 0 8px;
+  background: none !important;
+  color: rgb(var(--af-text));
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 26px;
+}
+.user .activity-feed-wrap .section-header .el-dropdown-menu__item:hover { color: rgb(var(--af-accent)); }
+.user .activity-feed-wrap .section-header .popper__arrow { display: none; }
+.user .activity-feed {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--af-entry-min)), 1fr)) !important;
+  gap: 0 var(--af-gap) !important;
+  align-items: start;
+}
+.user .activity-entry {
+  min-width: 0;
+  margin-bottom: 10px !important;
+  contain: layout style;
+}
+.user .activity-entry .list.small {
+  height: var(--af-entry-height);
+  min-height: 0;
+  grid-template-columns: calc(var(--af-entry-height) * .7) minmax(0, 1fr) !important;
+  box-sizing: border-box;
+}
+.user .activity-entry .list.small .cover {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: var(--af-radius);
+  background-size: cover;
+  background-position: center;
+}
+.user .activity-entry .list.small .status {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #fff;
+  font-size: clamp(1.2rem, .3vw + 1rem, 1.5rem);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.user .activity-entry .list .name,
+.user .activity-entry .list .avatar { display: none !important; }
+.user .activity-entry .status .title { color: rgb(var(--af-accent)) !important; }
+.user .activity-entry time { color: rgb(var(--af-text)); font-weight: 700; }
+.user .activity-feed-wrap textarea {
+  background: rgb(var(--af-card)) !important;
+  border-radius: var(--af-radius) !important;
+}
+.user .load-more {
+  grid-column: 1 / -1;
+  background: rgb(var(--af-card)) !important;
+  border-radius: var(--af-radius);
+}
+
+/* --------------------------------------------------------------------------
+   13. Historial y géneros
+   El historial se llena por columnas: siete filas, una por día de la semana.
+   -------------------------------------------------------------------------- */
+.user .activity-history {
+  display: grid !important;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, auto);
+  grid-auto-columns: minmax(0, 16px);
+  justify-content: center;
+  gap: 3px;
+}
+.user .activity-history .history-day {
+  display: block !important;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 3px;
+}
+.user .genre-overview .genres {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px !important;
+  box-sizing: border-box;
+}
+.user .genre-overview .genre { display: block !important; flex: 1 1 76px; min-width: 0; }
+
+/* --------------------------------------------------------------------------
+   14. Favoritos
+   Automail (ajuste CSSfavs) fija 470px de ancho y filas de 115px en este mismo
+   elemento: por eso los selectores reforzados y !important. No hay límite de
+   alto salvo por debajo de 861px (sección 20). Columnas: --af-fav-cols.
+   -------------------------------------------------------------------------- */
+.user .overview .favourites > .favourites-wrap,
+.user .favourites .favourites-wrap {
+  display: grid !important;
+  width: auto !important;
+  max-width: 100%;
+  box-sizing: border-box;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+  grid-template-rows: none !important;
+  grid-auto-rows: auto;
+  gap: 12px !important;
+  padding: 16px !important;
+  background: rgb(var(--af-card)) !important;
+  margin-bottom: var(--af-gap) !important;
+}
+.user .favourites-wrap > :not(.favourite) { display: contents; }
+.user .favourites-wrap > a,
+.user .favourites-wrap > div,
+.user .favourites-wrap .favourite { margin: 0 !important; }
+.user .favourites-wrap .favourite {
+  width: 100% !important;
+  border-radius: 10px;
+  background-size: cover;
+  box-sizing: border-box;
+  transition: transform .15s;
+}
+.user .favourites-wrap .favourite:hover { transform: translateY(-3px); }
+.user .favourites-wrap .favourite:not(.studio) { height: auto !important; aspect-ratio: 85 / 115; }
+.user .content > .overview .favourites > .favourites-wrap {
+  grid-template-columns: repeat(var(--af-fav-cols), minmax(0, 1fr)) !important;
+  align-content: start;
+  scrollbar-width: none;
+}
+.user .favourites-wrap::-webkit-scrollbar { display: none; }
+.user .content > .overview .favourites > .favourites-wrap.studios {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+}
+
+/* --------------------------------------------------------------------------
+   15. Filtros
+   Opción activa en las barras laterales de las subpáginas.
+   -------------------------------------------------------------------------- */
+.user .filter-group > .active,
+.user .filter-group > .router-link-active {
+  background: rgba(255, 255, 255, .07) !important;
+  border-radius: 8px;
+  color: rgb(var(--af-accent)) !important;
+}
+
+/* --------------------------------------------------------------------------
+   16. Anime y Manga List
+   content-visibility acelera las listas largas. No lo uses en tarjetas ni en
+   Social: con filas automáticas provocó solapamientos.
+   -------------------------------------------------------------------------- */
+.user .medialist .section-name { margin-bottom: 12px; }
+.user .medialist .list-head {
+  background: rgb(var(--af-card)) !important;
+  border-radius: var(--af-radius) var(--af-radius) 0 0;
+}
+.user .medialist .entry {
+  background: rgb(var(--af-card));
+  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 53px;
+}
+.user .medialist .entry:last-child { border-radius: 0 0 var(--af-radius) var(--af-radius); }
+.user .medialist .entry:hover { background: rgb(27, 33, 42) !important; }
+.user .medialist .entry .title a { color: rgb(var(--af-text)); }
+.user .medialist .entry:hover .title a { color: rgb(var(--af-accent)); }
+.user .medialist.cards .list-entries {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+  gap: 14px;
+}
+.user .medialist.cards .entry-card {
+  height: auto;
+  aspect-ratio: 5 / 7;
+  border-radius: 12px;
+  box-shadow: none;
+  overflow: hidden;
+}
+.user .medialist.cards .entry-card .release-status { top: 6px; left: 6px; }
+.user .medialist.cards .entry-card .title { background: rgba(var(--af-black), .85); }
+
+/* --------------------------------------------------------------------------
+   17. Estadísticas
+   Página Stats del perfil.
+   -------------------------------------------------------------------------- */
+.user .stats .circle,
+.user .stats .switch { background: rgb(var(--af-card)) !important; border-radius: 999px; }
+.user .stats .x-axis { background: rgba(255, 255, 255, .04) !important; }
+
+/* --------------------------------------------------------------------------
+   18. Social
+   grid-template-rows: none evita que las filas fijas de AniList solapen tarjetas.
+   -------------------------------------------------------------------------- */
+.user .user-follow .wrap {
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)) !important;
+  grid-template-rows: none !important;
+  grid-auto-rows: auto !important;
+  gap: 14px !important;
+}
+.user .follow-card,
+.user .follow-card .avatar {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1;
+}
+.user .follow-card .avatar {
+  border-radius: 14px;
+  background-size: cover;
+  overflow: hidden;
+}
+.user .follow-card .name {
+  width: 100%;
+  height: 100%;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 6px 4px;
+  box-sizing: border-box;
+  background: linear-gradient(transparent 50%, rgba(var(--af-black), .92));
+  color: #fff;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   19. Barras laterales
+   Solo desde 1041px: por debajo, AniList cambia a su diseño móvil.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1041px) {
+  .user .medialist { grid-template-columns: clamp(190px, 14vw, 240px) minmax(0, 1fr) !important; gap: var(--af-gap) !important; }
+  .user .stats,
+  .user .user-social { grid-template-columns: clamp(170px, 13vw, 220px) minmax(0, 1fr) !important; gap: var(--af-gap) !important; }
+  .user .stats-wrap { min-width: 0; }
+  .user .filters-wrap,
+  .user .user-social > .filters,
+  .user .stats > .filters {
+    align-self: start;
+    padding: 14px;
+    background: rgb(var(--af-card));
+    border-radius: var(--af-radius);
+    box-sizing: border-box;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   20. Responsive
+   Déjalo siempre al final.
+   <=1499px: media pantalla, 4 favoritos por fila.
+   <=1040px: AniList quita la barra superior; el banner sube y se reduce.
+   <=860px:  una sola columna y favoritos con scroll interno sin barra.
+   <=520px:  móvil en vertical.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1499px) {
+  :root { --af-fav-cols: 4; }
+}
+@media (max-width: 1040px) {
+  :root { --af-top: 24px; --af-banner-height: clamp(150px, 19vw, 200px); }
+}
+@media (max-width: 860px) {
+  :root { --af-fav-cols: 6; }
+  .user .content > .overview { grid-template-columns: minmax(0, 1fr) !important; }
+  .user .content > .overview .favourites > .favourites-wrap { max-height: 60vw; overflow: hidden auto; }
+}
+@media (max-width: 520px) {
+  :root { --af-entry-min: 100%; --af-radius: 12px; --af-fav-cols: 4; }
+  .user .list-stats .value { font-size: 1.7rem; }
+  .user .list-stats .label { font-size: 1rem; }
+}
